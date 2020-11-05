@@ -24,7 +24,7 @@ namespace ClusterExperiment1
             SpawnMember();
 
             Thread.Sleep(Timeout.Infinite);
-            return Task.CompletedTask;            
+            return Task.CompletedTask;
         }
 
         private static async Task RunLeader()
@@ -36,38 +36,35 @@ namespace ClusterExperiment1
             await Task.Delay(5000);
 
             _ = Task.Run(async () =>
-            {
-                var rnd = new Random();
-                while (true)
                 {
-
-                    var id = "myactor" + rnd.Next(0, 1000);
-                    try
+                    var rnd = new Random();
+                    while (true)
                     {
-
-                        var res = await cluster.RequestAsync<HelloResponse>(id, "hello", new HelloRequest(),
-                            new CancellationTokenSource(TimeSpan.FromSeconds(15)).Token
-                        );
-
-                        if (res == null)
+                        var id = "myactor" + rnd.Next(0, 1000);
+                        try
                         {
-                            logger.LogError("Null response");
+                            var res = await cluster.RequestAsync<HelloResponse>(id, "hello", new HelloRequest(),
+                                new CancellationTokenSource(TimeSpan.FromSeconds(15)).Token
+                            );
+
+                            if (res == null)
+                            {
+                                logger.LogError("Null response");
+                            }
+                            else
+                            {
+                                Console.Write(".");
+                            }
                         }
-                        else
+                        catch (Exception x)
                         {
-                            Console.Write(".");
+                            logger.LogError(x, "Request timeout for {Id}", id);
                         }
-                    }
-                    catch (Exception x)
-                    {
-                        logger.LogError(x, "Request timeout for {Id}", id);
                     }
                 }
-
-            }
             );
 
-        Console.ReadLine();
+            Console.ReadLine();
 
             //   Thread.Sleep(Timeout.Infinite);
         }
@@ -90,7 +87,7 @@ namespace ClusterExperiment1
 
         public static async Task Main(string[] args)
         {
-            if (args.Length == 0 )
+            if (args.Length == 0)
             {
                 await RunLeader();
             }
@@ -121,7 +118,7 @@ namespace ClusterExperiment1
                 .WithClusterKind("hello", helloProps);
 
             var cluster = new Cluster(system, config);
-            
+
             cluster.StartMemberAsync();
             return cluster;
         }
@@ -159,16 +156,21 @@ namespace ClusterExperiment1
             }
         }
 
-        private static MongoIdentityLookup GetIdentityLookup()
+        private static IIdentityLookup GetIdentityLookup()
         {
             var db = GetMongo();
-            var identity = new MongoIdentityLookup("mycluster", db);
+            var identity =
+                new ExternalIdentityLookup(new MongoIdentityStorage("mycluster",
+                        db.GetCollection<PidLookupEntity>("pids")
+                    )
+                );
             return identity;
         }
 
         static IMongoDatabase GetMongo()
         {
-            var connectionString = Environment.GetEnvironmentVariable("MONGO") ?? "mongodb://127.0.0.1:27017/ProtoMongo";
+            var connectionString =
+                Environment.GetEnvironmentVariable("MONGO") ?? "mongodb://127.0.0.1:27017/ProtoMongo";
             var url = MongoUrl.Create(connectionString);
             var settings = MongoClientSettings.FromUrl(url);
             settings.WriteConcern = WriteConcern.Acknowledged;
@@ -178,8 +180,7 @@ namespace ClusterExperiment1
             return database;
         }
     }
-    
-    
+
 
     public class HelloActor : IActor
     {

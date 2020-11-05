@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
@@ -6,12 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Proto.Cluster.ExternalIdentityLookup\Proto.Cluster.ExternalIdentityLookup.csproj" />
       <ProjectReference Include="..\Proto.Cluster\Proto.Cluster.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MongoDB.Driver" Version="2.10.4" />
+      <PackageReference Include="StackExchange.Redis" Version="2.1.58" />
     </ItemGroup>
 
 </Project>

@@ -1,15 +1,13 @@
-using System.Threading;
+﻿using System.Threading;
 using Proto.Router;
 
-namespace Proto.Cluster.MongoIdentityLookup
+namespace Proto.Cluster
 {
     public class GetPid : IHashable
     {
-        public string Key { get; set; }
         public ClusterIdentity ClusterIdentity { get; set; }
-        public string Kind { get; set; }
         public CancellationToken CancellationToken { get; set; }
-        public string HashBy() => Key;
+        public string HashBy() => ClusterIdentity.ToShortString();
     }
 
     public class PidResult

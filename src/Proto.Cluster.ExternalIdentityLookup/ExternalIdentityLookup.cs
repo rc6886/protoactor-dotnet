@@ -1,45 +1,33 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
 using Proto.Cluster.IdentityLookup;
 using Proto.Router;
 
-namespace Proto.Cluster.MongoIdentityLookup
+namespace Proto.Cluster
 {
-    public class MongoIdentityLookup : IIdentityLookup
+    public class ExternalIdentityLookup : IIdentityLookup
     {
-        private const string MongoPlacementActorName = "placement-activator";
-        private readonly string _clusterName;
-        internal readonly IMongoCollection<PidLookupEntity> Pids;
+        internal IExternalIdentityStorage Storage { get; }
+        private const string PlacementActorName = "placement-activator";
         internal Cluster Cluster;
-        private IMongoDatabase _db;
         private bool _isClient;
         private ILogger _logger;
         internal MemberList MemberList;
         private PID _placementActor;
         private ActorSystem _system;
         private PID _router;
+        private string _memberId;
 
-        public MongoIdentityLookup(string clusterName, IMongoDatabase db)
+        public ExternalIdentityLookup(IExternalIdentityStorage storage)
         {
-            _clusterName = clusterName;
-            _db = db;
-            //TODO: make collection name configurable
-            Pids = db.GetCollection<PidLookupEntity>("pids");
+            Storage = storage;
         }
-
-        public Task<PID> GetAsync(string identity, string kind, CancellationToken ct)
-            => GetAsync(new ClusterIdentity {Identity = identity, Kind = kind}, ct);
 
         public async Task<PID> GetAsync(ClusterIdentity clusterIdentity, CancellationToken ct)
         {
-            var key = $"{_clusterName}-{clusterIdentity.Kind}-{clusterIdentity.Identity}";
-
             var msg = new GetPid
             {
-                Key = key,
                 ClusterIdentity = clusterIdentity,
                 CancellationToken = ct
             };
@@ -52,11 +40,12 @@ namespace Proto.Cluster.MongoIdentityLookup
         {
             Cluster = cluster;
             _system = cluster.System;
+            _memberId = cluster.Id.ToString();
             MemberList = cluster.MemberList;
-            _logger = Log.CreateLogger("MongoIdentityLookup-" + cluster.LoggerId);
+            _logger = Log.CreateLogger("ExternalIdentityLookup-" + cluster.LoggerId);
             _isClient = isClient;
 
-            var workerProps = Props.FromProducer(() => new MongoIdentityWorker(this));
+            var workerProps = Props.FromProducer(() => new ExternalIdentityWorker(this));
             //TODO: should pool size be configurable?
 
             var routerProps = _system.Root.NewConsistentHashPool(workerProps, 50);
@@ -74,8 +63,8 @@ namespace Proto.Cluster.MongoIdentityLookup
             );
 
             if (isClient) return Task.CompletedTask;
-            var props = Props.FromProducer(() => new MongoPlacementActor(Cluster, this));
-            _placementActor = _system.Root.SpawnNamed(props, MongoPlacementActorName);
+            var props = Props.FromProducer(() => new ExternalIdentityPlacementActor(Cluster,this));
+            _placementActor = _system.Root.SpawnNamed(props, PlacementActorName);
 
             return Task.CompletedTask;
         }
@@ -89,17 +78,17 @@ namespace Proto.Cluster.MongoIdentityLookup
 
         internal Task RemoveMemberAsync(string memberId)
         {
-            return Pids.DeleteManyAsync(p => p.MemberId == memberId);
+            return Storage.RemoveMemberIdAsync(memberId,CancellationToken.None);
         }
 
         internal PID RemotePlacementActor(string address)
         {
-            return PID.FromAddress(address, MongoPlacementActorName);
+            return PID.FromAddress(address, PlacementActorName);
         }
 
-        public Task RemoveUniqueIdentityAsync(string uniqueIdentity)
+        public Task RemovePidAsync(PID pid)
         {
-            return Pids.DeleteManyAsync(p => p.UniqueIdentity == uniqueIdentity);
+            return Storage.RemoveActivation(pid, CancellationToken.None);
         }
     }
 }

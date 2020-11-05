@@ -124,6 +124,8 @@ ProjectSection(SolutionItems) = preProject
 	.github\ISSUE_TEMPLATE.md = .github\ISSUE_TEMPLATE.md
 EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proto.Cluster.ExternalIdentityLookup", "src\Proto.Cluster.ExternalIdentityLookup\Proto.Cluster.ExternalIdentityLookup.csproj", "{9E7E2074-1A0D-451D-B0E2-95D8AE7389B9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -580,6 +582,10 @@ Global
 		{C087B9A2-6790-484B-9C19-C23DDB025CEA}.Release|x64.Build.0 = Release|Any CPU
 		{C087B9A2-6790-484B-9C19-C23DDB025CEA}.Release|x86.ActiveCfg = Release|Any CPU
 		{C087B9A2-6790-484B-9C19-C23DDB025CEA}.Release|x86.Build.0 = Release|Any CPU
+		{9E7E2074-1A0D-451D-B0E2-95D8AE7389B9}.Release|x64.ActiveCfg = Release|Any CPU
+		{9E7E2074-1A0D-451D-B0E2-95D8AE7389B9}.Release|x64.Build.0 = Release|Any CPU
+		{9E7E2074-1A0D-451D-B0E2-95D8AE7389B9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9E7E2074-1A0D-451D-B0E2-95D8AE7389B9}.Debug|x64.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -634,6 +640,7 @@ Global
 		{D9E84C28-FC26-4547-9F16-5BA7147B1B82} = {771514F1-12AE-4A26-89CB-2646D3EF7034}
 		{C1B69015-FC27-483E-A65A-A342DC14B7F4} = {0F3AB331-C042-4371-A2F0-0AFDFA13DC9F}
 		{C087B9A2-6790-484B-9C19-C23DDB025CEA} = {771514F1-12AE-4A26-89CB-2646D3EF7034}
+		{9E7E2074-1A0D-451D-B0E2-95D8AE7389B9} = {771514F1-12AE-4A26-89CB-2646D3EF7034}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CD0D1E44-8118-4682-8793-6B20ABFA824C}
